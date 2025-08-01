@@ -34,9 +34,9 @@ img {
 header {
     position: fixed;
     background: linear-gradient(135deg, #006994, #0087c7);
-    position: fixed;
     top: 0;
-    width: 100%;
+    left: 0;
+    right: 0;
     z-index: 1000;
     box-shadow: 0 2px 20px rgba(0, 105, 148, 0.3);
     backdrop-filter: blur(10px);
@@ -109,6 +109,7 @@ nav .nav-links a.active-link {
 .nav-links a:hover::after {
     width: 80%;
 }
+
 
 /* Hero Section */
 .hero {
@@ -1075,51 +1076,6 @@ nav .nav-links a.active-link {
     transform: translateY(0);
 }
 
-/* Các biến thể hiệu ứng (tùy chọn) */
-.fade-in-left {
-    opacity: 0;
-    transform: translateX(-30px);
-    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-}
-
-.fade-in-left.visible {
-    opacity: 1;
-    transform: translateX(0);
-}
-
-.fade-in-right {
-    opacity: 0;
-    transform: translateX(30px);
-    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-}
-
-.fade-in-right.visible {
-    opacity: 1;
-    transform: translateX(0);
-}
-
-.fade-in-scale {
-    opacity: 0;
-    transform: scale(0.95);
-    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-}
-
-.fade-in-scale.visible {
-    opacity: 1;
-    transform: scale(1);
-}
-
-.fade-in.delay-1 {
-    transition-delay: 0.2s;
-}
-
-.fade-in.delay-2 {
-    transition-delay: 0.4s;
-}
-
-.fade-in.delay-3 {
-    transition-delay: 0.6s;
-}
 
 /* About US */
 .company-section {
@@ -1408,9 +1364,12 @@ nav .nav-links a.active-link {
     transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 
-.menu-overlay.is-active {
-    opacity: 1;
-    visibility: visible;
+section {
+    scroll-margin-top: 100px;
+}
+
+.swiper-pagination-fraction {
+    color: rgb(226, 226, 226) !important;
 }
 
 @media (max-width: 992px) {
@@ -1420,6 +1379,12 @@ nav .nav-links a.active-link {
 }
 
 @media (max-width: 768px) {
+
+    .menu-overlay.is-active {
+        opacity: 1;
+        visibility: visible;
+    }
+
     .menu-toggle {
         display: block;
         font-size: 1.5rem;

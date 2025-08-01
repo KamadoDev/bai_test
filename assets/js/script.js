@@ -4,8 +4,8 @@
     // Khởi tạo ứng dụng
     function initApp() {
         console.log("Script initialized");
-        
-        // Các hàm khởi tạo
+
+        // Các hàm khởi tạo riêng lẻ
         initSmoothScroll();
         initMobileMenu();
         initModals();
@@ -15,15 +15,23 @@
         initScrollToTop();
         initFixedCallButton();
         initScrollAnimations();
+
+        initHeaderEffects();
+        initCardHoverEffects();
     }
 
     // 1. Smooth scrolling cho navigation links
     function initSmoothScroll() {
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener("click", function (e) {
-                e.preventDefault();
                 const target = document.querySelector(this.getAttribute("href"));
-                target?.scrollIntoView({ behavior: "smooth", block: "start" });
+                if (target) {
+                    e.preventDefault();
+                    target.scrollIntoView({
+                        behavior: "smooth",
+                        block: "start"
+                    });
+                }
             });
         });
     }
@@ -36,18 +44,21 @@
 
         if (!menuToggle || !menu || !menuOverlay) return;
 
-        const toggleMenu = () => {
-            const isActive = !menu.classList.contains("is-active");
+        const toggleMenu = (isActive) => {
             menu.classList.toggle("is-active", isActive);
             menuToggle.classList.toggle("is-active", isActive);
             menuOverlay.classList.toggle("is-active", isActive);
             menuToggle.setAttribute("aria-expanded", isActive);
+            document.body.classList.toggle("menu-open", isActive);
         };
 
-        menuToggle.addEventListener("click", toggleMenu);
-        menuOverlay.addEventListener("click", toggleMenu);
+        menuToggle.addEventListener("click", () =>
+            toggleMenu(!menu.classList.contains("is-active"))
+        );
+
+        menuOverlay.addEventListener("click", () => toggleMenu(false));
         document.querySelectorAll('.nav-links a').forEach(link => {
-            link.addEventListener('click', toggleMenu);
+            link.addEventListener('click', () => toggleMenu(false));
         });
     }
 
@@ -75,7 +86,6 @@
                         `);
                     });
                     projectModal.classList.add('active');
-                    projectSwiper.update().slideTo(0);
                 });
             });
 
@@ -103,12 +113,24 @@
         });
     }
 
-    // 4. FAQ Accordion
+    // 4. FAQ Accordion (Fixed version)
     function initFAQAccordion() {
         document.querySelectorAll(".faq-item").forEach(item => {
-            item.querySelector(".faq-question")?.addEventListener("click", () => {
-                document.querySelector(".faq-item.active")?.classList.remove("active");
-                item.classList.toggle("active");
+            const question = item.querySelector(".faq-question");
+            if (!question) return;
+
+            question.addEventListener("click", () => {
+                const currentlyActive = item.classList.contains("active");
+
+                // Đóng tất cả các item khác
+                document.querySelectorAll(".faq-item.active").forEach(activeItem => {
+                    if (activeItem !== item) {
+                        activeItem.classList.remove("active");
+                    }
+                });
+
+                // Toggle trạng thái của item hiện tại
+                item.classList.toggle("active", !currentlyActive);
             });
         });
     }
@@ -144,16 +166,16 @@
         if (!scrollToTopBtn) return;
 
         const toggleVisibility = () => {
-            scrollToTopBtn.classList.toggle("visible", window.pageYOffset > 300);
+            scrollToTopBtn.classList.toggle("visible", window.scrollY > 300);
         };
 
         toggleVisibility();
         window.addEventListener("scroll", toggleVisibility);
-        
+
         scrollToTopBtn.addEventListener("click", (e) => {
             e.preventDefault();
             window.scrollTo({ top: 0, behavior: "smooth" });
-            
+
             // Hiệu ứng nhấn
             scrollToTopBtn.classList.add("clicked");
             setTimeout(() => scrollToTopBtn.classList.remove("clicked"), 300);
@@ -167,60 +189,89 @@
 
         if (!fixedCallBtn || !heroSection) return;
 
-        const toggleCallButton = () => {
-            const shouldShow = window.innerWidth <= 768 && 
-                              window.pageYOffset > heroSection.offsetHeight * 0.75;
+        const toggleVisibility = () => {
+            const shouldShow = window.innerWidth <= 768 &&
+                window.scrollY > heroSection.offsetHeight * 0.75;
             fixedCallBtn.classList.toggle("visible", shouldShow);
         };
 
-        toggleCallButton();
-        window.addEventListener("scroll", toggleCallButton);
-        window.addEventListener("resize", toggleCallButton);
-        
-        fixedCallBtn.addEventListener('click', function () {
-            this.style.transform = 'scale(0.95)';
-            setTimeout(() => this.style.transform = '', 200);
+        toggleVisibility();
+        window.addEventListener("scroll", toggleVisibility);
+        window.addEventListener("resize", toggleVisibility);
+
+        fixedCallBtn.addEventListener("click", function () {
+            this.style.transform = "scale(0.95)";
+            setTimeout(() => this.style.transform = "", 200);
         });
     }
 
     // 9. Scroll-triggered Animations
     function initScrollAnimations() {
         const fadeSelectors = [
-            'fade-in',
-            'fade-in-left', 
-            'fade-in-right',
-            'fade-in-scale'
+            'fade-in', 'fade-in-left',
+            'fade-in-right', 'fade-in-scale'
         ].map(cls => `.${cls}`).join(', ');
 
         const elements = document.querySelectorAll(fadeSelectors);
-        if (elements.length === 0) return;
+        if (!elements.length) return;
 
         if ('IntersectionObserver' in window) {
             const observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
-                        entry.target.classList.add('visible');
+                        entry.target.classList.add("visible");
                         observer.unobserve(entry.target);
                     }
                 });
-            }, { threshold: 0.1, rootMargin: '0px 0px -150px 0px' });
+            }, {
+                threshold: 0.1,
+                rootMargin: "0px 0px -100px 0px"
+            });
 
             elements.forEach(el => observer.observe(el));
         } else {
             // Fallback cho trình duyệt cũ
-            const checkElements = () => {
+            const checkVisibility = () => {
                 elements.forEach(el => {
                     if (el.getBoundingClientRect().top < window.innerHeight - 100) {
-                        el.classList.add('visible');
+                        el.classList.add("visible");
                     }
                 });
             };
 
-            checkElements();
-            window.addEventListener('scroll', () => {
-                setTimeout(checkElements, 50);
-            });
+            checkVisibility();
+            window.addEventListener("scroll", () => setTimeout(checkVisibility, 50));
         }
+    }
+
+    // 10. Hiệu ứng header khi scroll 
+    function initHeaderEffects() {
+        const header = document.querySelector("header");
+        if (!header) return;
+
+        window.addEventListener("scroll", () => {
+            const opacity = Math.min(window.scrollY / 200, 0.2);
+            header.style.background = `
+                linear-gradient(135deg, 
+                rgba(0, 105, 148, ${0.9 + opacity}), 
+                rgba(0, 135, 199, ${0.9 + opacity})
+            `;
+        });
+    }
+
+    // 11. Hiệu ứng hover cho card 
+    function initCardHoverEffects() {
+        document.querySelectorAll(".feature-card, .service-card, .process-step").forEach(card => {
+            card.addEventListener("mouseenter", () => {
+                card.style.transform = "translateY(-5px) scale(1.02)";
+                card.style.boxShadow = "0 10px 20px rgba(0, 0, 0, 0.1)";
+            });
+
+            card.addEventListener("mouseleave", () => {
+                card.style.transform = "";
+                card.style.boxShadow = "";
+            });
+        });
     }
 
     // Khởi chạy ứng dụng khi DOM ready
